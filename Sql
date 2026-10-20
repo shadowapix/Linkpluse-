@@ -1,0 +1,70 @@
+// Array to hold link data in memory
+let savedLinks = [];
+
+// Function called when user clicks "Generate Short Link" button
+function createShortLink() {
+    // 1. Get input values from HTML elements
+    let longUrl = document.getElementById("longUrl").value;
+    let password = document.getElementById("linkPassword").value;
+
+    // 2. Simple validation
+    if (longUrl === "") {
+        alert("Please enter a valid URL!");
+        return;
+    }
+
+    // 3. Create a short code (random 5 characters)
+    let shortCode = Math.random().toString(36).substring(2, 7);
+    let shortUrl = "https://linkpulse.code/" + shortCode;
+
+    // 4. Save link object
+    let linkObject = {
+        originalUrl: longUrl,
+        shortUrl: shortUrl,
+        password: password,
+        clicks: 0
+    };
+    savedLinks.push(linkObject);
+
+    // 5. Display Result
+    document.getElementById("resultBox").style.display = "block";
+    let shortUrlAnchor = document.getElementById("shortUrlLink");
+    shortUrlAnchor.innerText = shortUrl;
+    shortUrlAnchor.href = longUrl; // Clicking opens original link for testing
+
+    // 6. Generate QR Code
+    document.getElementById("qrcode").innerHTML = ""; // Clear previous QR
+    new QRCode(document.getElementById("qrcode"), {
+        text: shortUrl,
+        width: 128,
+        height: 128
+    });
+
+    // 7. Update History List on Screen
+    updateHistory();
+
+    // 8. Clear Inputs
+    document.getElementById("longUrl").value = "";
+    document.getElementById("linkPassword").value = "";
+}
+
+// Function to update saved links display
+function updateHistory() {
+    let historyContainer = document.getElementById("linkHistory");
+    historyContainer.innerHTML = ""; // Clear list
+
+    for (let i = 0; i < savedLinks.length; i++) {
+        let link = savedLinks[i];
+        let item = document.createElement("div");
+        item.className = "link-item";
+        
+        let passText = link.password ? " (Protected by Password)" : "";
+        
+        item.innerHTML = `
+            <p><strong>Short Link:</strong> ${link.shortUrl} ${passText}</p>
+            <p style="color: #666;"><strong>Target:</strong> ${link.originalUrl}</p>
+        `;
+        
+        historyContainer.appendChild(item);
+    }
+}
