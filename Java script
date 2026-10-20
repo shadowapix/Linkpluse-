@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkPulse - Easy URL Shortener</title>
+    <!-- Simple QR Code Library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+    <style>
+        /* CSS: Basic Styling for Clean Design */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            margin: 0;
+            color: #2c3e50;
+        }
+
+        .header p {
+            margin: 5px 0 0 0;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+        button {
+            width: 100%;
+            background-color: #3498db;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        .result-box {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #eef7fc;
+            border: 1px solid #bce1f7;
+            border-radius: 5px;
+            display: none; /* Hidden by default */
+            text-align: center;
+        }
+
+        .result-box a {
+            color: #2980b9;
+            font-weight: bold;
+            word-break: break-all;
+        }
+
+        #qrcode {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .links-list {
+            margin-top: 30px;
+        }
+
+        .links-list h3 {
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+            color: #2c3e50;
+        }
+
+        .link-item {
+            background-color: #fafafa;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .link-item strong {
+            color: #27ae60;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Section -->
+    <div class="header">
+        <h1>LinkPulse</h1>
+        <p>Created by Team Aspire (Graphic Era Hill University, Haldwani Campus)</p>[cite: 1]
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <h2>Shorten a Long Link</h2>
+
+        <!-- HTML Form -->
+        <div class="form-group">
+            <label for="longUrl">Enter Long Web Address (URL):</label>
+            <input type="url" id="longUrl" placeholder="https://example.com/my-long-link" required>
+        </div>
+
+        <div class="form-group">
+            <label for="linkPassword">Password Protection (Optional):</label>
+            <input type="text" id="linkPassword" placeholder="Set a password">
+        </div>
+
+        <button onclick="createShortLink()">Generate Short Link</button>
+
+        <!-- Result Box for Short Link & QR Code -->
+        <div id="resultBox" class="result-box">
+            <p><strong>Your Short Link:</strong></p>
+            <p><a id="shortUrlLink" href="#" target="_blank"></a></p>
+            <p><strong>QR Code:</strong></p>
+            <div id="qrcode"></div>
+        </div>
+
+        <!-- History / Saved Links -->
+        <div class="links-list">
+            <h3>Created Links</h3>
+            <div id="linkHistory">
+                <p style="color: #888; font-size: 13px;">No links created yet.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Section -->
+    <script>
+        // Array to hold link data in memory
+        let savedLinks = [];
+
+        // Function called when user clicks "Generate Short Link" button
+        function createShortLink() {
+            // 1. Get input values from HTML elements
+            let longUrl = document.getElementById("longUrl").value;
+            let password = document.getElementById("linkPassword").value;
+
+            // 2. Simple validation
+            if (longUrl === "") {
+                alert("Please enter a valid URL!");
+                return;
+            }
+
+            // 3. Create a short code (random 5 characters)
+            let shortCode = Math.random().toString(36).substring(2, 7);
+            let shortUrl = "https://linkpulse.code/" + shortCode;
+
+            // 4. Save link object
+            let linkObject = {
+                originalUrl: longUrl,
+                shortUrl: shortUrl,
+                password: password,
+                clicks: 0
+            };
+            savedLinks.push(linkObject);
+
+            // 5. Display Result
+            document.getElementById("resultBox").style.display = "block";
+            let shortUrlAnchor = document.getElementById("shortUrlLink");
+            shortUrlAnchor.innerText = shortUrl;
+            shortUrlAnchor.href = longUrl; // Clicking opens original link for testing
+
+            // 6. Generate QR Code
+            document.getElementById("qrcode").innerHTML = ""; // Clear previous QR
+            new QRCode(document.getElementById("qrcode"), {
+                text: shortUrl,
+                width: 128,
+                height: 128
+            });
+
+            // 7. Update History List on Screen
+            updateHistory();
+
+            // 8. Clear Inputs
+            document.getElementById("longUrl").value = "";
+            document.getElementById("linkPassword").value = "";
+        }
+
+        // Function to update saved links display
+        function updateHistory() {
+            let historyContainer = document.getElementById("linkHistory");
+            historyContainer.innerHTML = ""; // Clear list
+
+            for (let i = 0; i < savedLinks.length; i++) {
+                let link = savedLinks[i];
+                let item = document.createElement("div");
+                item.className = "link-item";
+                
+                let passText = link.password ? " (Protected by Password)" : "";
+                
+                item.innerHTML = `
+                    <p><strong>Short Link:</strong> ${link.shortUrl} ${passText}</p>
+                    <p style="color: #666;"><strong>Target:</strong> ${link.originalUrl}</p>
+                `;
+                
+                historyContainer.appendChild(item);
+            }
+        }
+    </script>
+
+</body>
+</html>
